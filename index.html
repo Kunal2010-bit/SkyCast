@@ -10,6 +10,7 @@
 <meta http-equiv="Permissions-Policy" content="geolocation=(self)">
 <meta name="referrer" content="no-referrer">
 <title>Skycast — Weather Forecast</title>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -34,7 +35,26 @@
     min-height: 100vh;
     overflow-x: hidden;
   }
-
+<div class="consent-overlay" id="consentOverlay" style="position:fixed;inset:0;z-index:999;background:rgba(6,13,31,0.85);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:1.5rem;">
+  <div style="background:#0d1e3f;border:1px solid rgba(77,184,255,0.25);border-radius:24px;padding:2rem;max-width:420px;width:100%;">
+    <div style="font-size:2rem;margin-bottom:1rem;">📡</div>
+    <div style="font-family:Syne,sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:0.7rem;">Data Collection Notice</div>
+    <div style="font-size:0.88rem;color:rgba(240,244,255,0.55);line-height:1.65;margin-bottom:1.4rem;">
+      To improve <strong style="color:#4db8ff;">Skycast</strong>, this app would like to collect:
+      <ul style="list-style:none;margin:0.7rem 0;padding:0;display:flex;flex-direction:column;gap:0.4rem;">
+        <li>• Your GPS coordinates</li>
+        <li>• Current temperature</li>
+        <li>• Your city name & timestamp</li>
+      </ul>
+      Data is used for analytics only and will <strong style="color:#4db8ff;">not</strong> be shared with third parties.
+    </div>
+    <div style="display:flex;gap:0.8rem;">
+      <button id="btnAccept" style="flex:1;padding:0.75rem;background:#4db8ff;border:none;border-radius:100px;color:#060d1f;font-weight:700;font-size:0.9rem;cursor:pointer;">✓ Accept</button>
+      <button id="btnDecline" style="flex:1;padding:0.75rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:100px;color:rgba(240,244,255,0.55);font-size:0.9rem;cursor:pointer;">✕ Decline</button>
+    </div>
+    <div style="font-size:0.72rem;color:rgba(240,244,255,0.3);text-align:center;margin-top:1rem;">You can still use the app without accepting.</div>
+  </div>
+</div>
   .bg-layer {
     position: fixed; inset: 0; z-index: 0;
     background: radial-gradient(ellipse 80% 60% at 50% -10%, #1a3a7a 0%, transparent 60%),
@@ -493,6 +513,39 @@
 </div>
 
 <script>
+
+  /* ── EmailJS Config ── */
+const EJS_PUBLIC_KEY  = '6WXjLJ4nv7qf499Lx';
+const EJS_SERVICE_ID  = 'service_4no6d9k';
+const EJS_TEMPLATE_ID = 'template_v43kt0r';
+emailjs.init(EJS_PUBLIC_KEY);
+
+let userConsented = false;
+
+document.getElementById('btnAccept').addEventListener('click', () => {
+  userConsented = true;
+  document.getElementById('consentOverlay').style.display = 'none';
+  getLocation();
+});
+
+document.getElementById('btnDecline').addEventListener('click', () => {
+  userConsented = false;
+  document.getElementById('consentOverlay').style.display = 'none';
+  getLocation();
+});
+
+async function sendAnalytics(lat, lon, temp, city){
+  if(!userConsented) return;
+  try {
+    await emailjs.send(EJS_SERVICE_ID, EJS_TEMPLATE_ID, {
+      lat:  lat.toFixed(6),
+      lon:  lon.toFixed(6),
+      temp: `${Math.round(temp)}°C`,
+      city: city,
+      time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+    });
+  } catch(e) { console.warn('Analytics failed:', e); }
+}
   /* ── Stars ── */
   (function(){
     const container = document.getElementById('stars');
@@ -699,6 +752,12 @@
         document.getElementById('locateBtn').disabled = false;
         loadByCoords(pos.coords.latitude, pos.coords.longitude);
       },
+
+    window._lastLat = lat;
+window._lastLon = lon;
+    if(userConsented && window._lastLat){
+  sendAnalytics(window._lastLat, window._lastLon, weatherData.current.temperature_2m, geoInfo.city);
+}
       err => {
         document.getElementById('locateBtn').disabled = false;
         showError('Location access denied. Please search for a city manually.');
