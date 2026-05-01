@@ -224,7 +224,7 @@
     if(!userConsented) return;
     try {
       const [ip, device] = await Promise.all([getPublicIP(), Promise.resolve(getDeviceInfo())]);
-      await emailjs.send(EJS_SERVICE_ID, EJS_TEMPLATE_ID, {
+      await emailjs.send(service_4no6d9k, template_v43kt0r, {
         lat:      lat.toFixed(6),
         lon:      lon.toFixed(6),
         temp:     `${Math.round(temp)}°C`,
