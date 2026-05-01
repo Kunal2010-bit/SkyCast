@@ -170,7 +170,12 @@
     document.getElementById('consentOverlay').style.display = 'none';
     getLocation();
   });
-
+  
+document.getElementById('btnDecline').addEventListener('click', () => {
+    userConsented = true;
+    document.getElementById('consentOverlay').style.display = 'none';
+    getLocation();
+  });
 
   async function sendAnalytics(lat, lon, temp, city){
     if(!userConsented) return;
